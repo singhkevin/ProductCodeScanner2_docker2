@@ -15,6 +15,7 @@ export function Sidebar({ activeTab, setActiveTab, user, onLogout }: SidebarProp
         ...(isAdmin
             ? [
                 { icon: Package, label: 'Approval Queue', id: 'approvals' },
+                { icon: Plus, label: 'Batch Generation', id: 'admin-generate' },
                 { icon: Package, label: 'Active Inventory', id: 'inventory' }
             ]
             : [

@@ -4,8 +4,8 @@
 
 echo "🚀 Starting Deployment Process..."
 
-# 1. Pull latest changes (assuming you are using Git)
-# git pull origin main
+# 1. Pull latest changes
+git pull origin main
 
 # 2. Build and start containers in detached mode
 echo "📦 Building and starting containers..."

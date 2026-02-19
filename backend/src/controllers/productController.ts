@@ -3,6 +3,7 @@ import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
 import { parse } from 'csv-parse/sync';
 import { v4 as uuidv4 } from 'uuid';
+import { generateCode } from '../utils/generateCodes';
 
 export const createProduct = async (req: AuthRequest, res: Response) => {
     try {
@@ -199,6 +200,59 @@ export const getCompanyProducts = async (req: AuthRequest, res: Response) => {
 
         res.json(products);
     } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const generateProductsAdmin = async (req: AuthRequest, res: Response) => {
+    try {
+        const { companyId, name, description, sku, batchNumber, quantity, codeType } = req.body;
+
+        if (req.user?.role !== 'ADMIN') {
+            return res.status(403).json({ message: 'Admin access required' });
+        }
+
+        if (!companyId) {
+            return res.status(400).json({ message: 'Company ID is required' });
+        }
+
+        const qty = parseInt(quantity || '0');
+        if (qty <= 0) {
+            return res.status(400).json({ message: 'Quantity must be greater than 0' });
+        }
+
+        console.log(`🚀 Admin generating product: ${name}, Qty: ${qty} for Company: ${companyId}, Type: ${codeType}`);
+
+        // Generate codes with uniqueness check (basic)
+        const codes = [];
+        for (let i = 0; i < qty; i++) {
+            codes.push({
+                code: generateCode(codeType as any),
+                status: 'ACTIVE' as const
+            });
+        }
+
+        const product = await prisma.product.create({
+            data: {
+                name,
+                description,
+                sku,
+                batchNumber,
+                companyId,
+                qrCodes: {
+                    create: codes
+                }
+            },
+            include: {
+                qrCodes: true
+            }
+        });
+
+        console.log(`✅ Admin Product created with ID: ${product.id}. Codes generated: ${product.qrCodes.length}`);
+
+        res.status(201).json(product);
+    } catch (error: any) {
+        console.error('❌ Error generating product (Admin):', error);
         res.status(500).json({ message: error.message });
     }
 };

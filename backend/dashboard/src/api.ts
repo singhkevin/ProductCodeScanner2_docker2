@@ -29,6 +29,7 @@ export const dashboardApi = {
         headers: { 'Content-Type': 'multipart/form-data' }
     }),
     createProduct: (data: any) => api.post('/products', data),
+    generateProductsAdmin: (data: any) => api.post('/products/admin/generate', data),
     getProducts: () => api.get('/products/company'),
     verifyToken: (token: string) => api.get('/auth/verify', {
         headers: { Authorization: `Bearer ${token}` }
