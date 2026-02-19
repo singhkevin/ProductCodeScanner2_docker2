@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Package, Search, Scan, X, ChevronRight, Copy, Check, ShieldCheck } from 'lucide-react';
+import { Package, Search, Scan, X, ChevronRight, Copy, Check, ShieldCheck, Download, Loader2 } from 'lucide-react';
 import { Html5QrcodeScanner } from 'html5-qrcode';
 import { dashboardApi } from '../api';
+import { generateQRCodePDF } from '../utils/pdfUtils';
 
 export default function Products() {
     const [products, setProducts] = useState<any[]>([]);
@@ -10,6 +11,7 @@ export default function Products() {
     const [copiedId, setCopiedId] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [isScanning, setIsScanning] = useState(false);
+    const [downloading, setDownloading] = useState(false);
 
     useEffect(() => {
         let scanner: any = null;
@@ -167,12 +169,29 @@ export default function Products() {
                                 <h2 className="text-2xl font-bold text-white tracking-tight">{selectedProduct.name}</h2>
                                 <p className="text-indigo-400 font-semibold text-[10px] mt-1 uppercase tracking-[0.2em]">Authentication Code Registry</p>
                             </div>
-                            <button
-                                onClick={() => setSelectedProduct(null)}
-                                className="p-3 bg-slate-800 text-slate-400 hover:text-white rounded-2xl transition-all active:scale-90"
-                            >
-                                <X size={20} />
-                            </button>
+                            <div className="flex items-center gap-4">
+                                <button
+                                    onClick={async () => {
+                                        setDownloading(true);
+                                        try {
+                                            await generateQRCodePDF(selectedProduct);
+                                        } finally {
+                                            setDownloading(false);
+                                        }
+                                    }}
+                                    disabled={downloading}
+                                    className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-xl transition-all shadow-lg shadow-indigo-600/20 text-xs font-bold"
+                                >
+                                    {downloading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+                                    {downloading ? 'Processing PDF...' : 'Download All (PDF)'}
+                                </button>
+                                <button
+                                    onClick={() => setSelectedProduct(null)}
+                                    className="p-3 bg-slate-800 text-slate-400 hover:text-white rounded-2xl transition-all active:scale-90"
+                                >
+                                    <X size={20} />
+                                </button>
+                            </div>
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-8 grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-900/50">
