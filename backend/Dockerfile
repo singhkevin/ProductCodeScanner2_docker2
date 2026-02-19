@@ -7,6 +7,9 @@ WORKDIR /app
 # Copy the backend folder contents (which includes dashboard and public-verifier)
 COPY . .
 
+# Sync environment variables for frontends
+RUN node sync-envs.js
+
 # Build Dashboard
 RUN cd dashboard && npm install && npm run build
 
@@ -25,7 +28,7 @@ COPY src ./src/
 COPY sync-envs.js ./
 
 # Install dependencies and build backend
-RUN npm install
+RUN npm install --ignore-scripts
 RUN npx prisma generate
 RUN npm run build
 
